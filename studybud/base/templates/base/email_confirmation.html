@@ -1,0 +1,19 @@
+{% extends 'base_temp.html' %}
+
+{% block content %}
+
+        {% if em_conf %}
+
+        <h2> Thank you for registration {{ request.user.username }}</h2>
+        <a href="{% url 'login'%}">Please confirm your email and login!</a>
+
+        {% endif %}
+
+        {% if em_log %}
+
+        <h2> Thank you for email confirmation!</h2>
+        <a href="{% url 'login'%}">Please, login!</a>
+
+        {% endif %}
+
+{% endblock %}
