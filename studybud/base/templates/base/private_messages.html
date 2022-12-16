@@ -34,12 +34,16 @@
           </div>
         {% for chat in chats %}
             <div class="roomListRoom__header">
-              <a href="{% url 'user_profile' user.id %}" class="roomListRoom__author">
+            {% for us in users %}
+                {% if us in chat.members.all %}
+              <a href="{% url 'user_profile' us.id %}" class="roomListRoom__author">
                 <div class="avatar avatar--small">
-                  <img src="{{ user.avatar.url }}" />
+                  <img src="{{ us.avatar.url }}" />
                 </div>
-                <span>@{{ user.username }}</span>
+                <span>@{{ us.username }}</span>
               </a>
+                {% endif %}
+                {% endfor %}
               <div class="roomListRoom__actions">
                 <span> {{ chat.updated|timesince }} ago</span>
               </div>

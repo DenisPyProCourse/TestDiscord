@@ -162,17 +162,22 @@ def private_messages(request, pk):
     topics = Topic.objects.all()[0:5]
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
     chats = Chat.objects.filter(members=request.user.id).order_by('-updated')
+    users = []
     for i in chats:
+        print(i.members.all())
         for j in i.members.all():
             if j.id != request.user.id:
-                user = User.objects.get(id=j.id) #НЕ СДЕЛАЛ, подтягивается то один то другой участник
-                
+                usern = User.objects.get(id=j.id) #НЕ СДЕЛАЛ, подтягивается то один то другой участник
+                users.append(usern)
+    print(users)
+
 
     context = {
         'user': user,
         'chats': chats,
         'topics': topics,
-        'room_messages': room_messages
+        'room_messages': room_messages,
+        'users': users
     }
     return render(request, 'base/private_messages.html', context)
 
