@@ -130,6 +130,26 @@ def home(request):
     }
     return render(request, 'base/home.html', context)
 
+def add_image(request, pk):
+    room = Room.objects.get(id=pk)
+    img = MessageForm()
+    # if request.method == "POST":
+    msg = Message.objects.create(
+    body='',
+    user=request.user,
+    room=room)
+    img = MessageForm(request.POST, request.FILES, instance=msg)
+    # img.body = ''
+    if img.is_valid():
+        # msg.images = img.images
+        # msg.
+        img.save()
+        msg.images = img.images
+        # msg.save()
+        # room.save()
+        return redirect('home')
+    return render(request, 'base/add_image.html', {'img': img, 'room': room})
+
 def room(request, pk):
     # room = None
     # for i in rooms:
@@ -138,6 +158,7 @@ def room(request, pk):
     room = Room.objects.get(id=pk)
     # msgs = room.message_set.all().order_by('-created') # I'll add ordering at model Meta class instead of writing it here
     msgs = room.message_set.all()
+    img = MessageForm()
     participants = room.participants.all()
     if request.method == "POST":
         msg = Message.objects.create(
@@ -145,14 +166,29 @@ def room(request, pk):
             room=room,
             body=request.POST.get('body')
         )
+        # img = MessageForm(request.POST, request.FILES)
+        # if img.is_valid():
+        #     # img.save()
+        #     msg2 = Message.objects.create(
+        #         user=request.user,
+        #         room=room,
+        #         body=None,
+        #         images=img.images
+        #     )
+        #     msg2.save()
         room.participants.add(request.user)
+        # img = add_image(request=request, pk=room.id)
         return redirect('room', pk=room.id)
     context = {
         'room': room,
         'msgs': msgs,
-        'participants': participants
+        'participants': participants,
+        'img': img
     }
     return render(request, 'base/room.html', context)
+
+
+
 
 
 @login_required(login_url='login')
@@ -164,12 +200,12 @@ def private_messages(request, pk):
     chats = Chat.objects.filter(members=request.user.id).order_by('-updated')
     users = []
     for i in chats:
-        print(i.members.all())
+        # print(i.members.all())
         for j in i.members.all():
             if j.id != request.user.id:
-                usern = User.objects.get(id=j.id) #НЕ СДЕЛАЛ, подтягивается то один то другой участник
+                usern = User.objects.get(id=j.id) #Mb not final solution
                 users.append(usern)
-    print(users)
+    # print(users)
 
 
     context = {
@@ -240,6 +276,27 @@ def chat(request, pk):
         'members': members
     }
     return render(request, 'base/chat.html', context)
+
+def update_chat(request, pk):
+    chat = Chat.objects.get(id=pk)
+    form = ChatForm(instance=chat)
+
+    if request.method == 'POST':
+        chat.name = request.POST.get('name')
+        chat.save()
+
+        return redirect('chat', pk=chat.id)
+    context = {'form': form, 'chat': chat}
+    return render(request, 'base/chat_form.html', context)
+
+@login_required(login_url='login')
+def delete_chat(request, pk):
+    chat = Chat.objects.get(id=pk)
+    if request.method == 'POST':
+        chat.delete()
+        return redirect('home')
+    context = {'obj': chat}
+    return render(request, 'base/delete.html', context)
 
 def user_profile(request, pk):
     user = User.objects.get(id=pk)
@@ -389,14 +446,23 @@ def reply_message(request, pk):
     form = MessageForm(instance=messg)
     pow = Message.objects.get(id=pk)
     if request.method == 'POST':
-        messg = Message.objects.create(
-            user=request.user,
-            room=messg.room,
-            body=request.POST.get('body'),
-            reply=messg
-        )
-        # s = messg.reply__user
-        return redirect('room', messg.room.id)
+        if messg.room:
+            messg = Message.objects.create(
+                user=request.user,
+                room=messg.room,
+                body=request.POST.get('body'),
+                reply=messg
+            )
+
+            return redirect('room', messg.room.id)
+        else:
+            messg = Message.objects.create(
+                user=request.user,
+                chat=messg.chat,
+                body=request.POST.get('body'),
+                reply=messg
+            )
+            return redirect('chat', messg.chat.id)
     context = {'form': form, 'messg': messg, 'pow': pow}
     return render(request, 'base/reply_messg.html', context)
 

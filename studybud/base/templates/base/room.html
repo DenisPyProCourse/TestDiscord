@@ -1,5 +1,7 @@
 {% extends 'base_temp.html' %}
 
+{% load static %}
+
  {% block content %}
 
     <main class="profile-page layout layout--2">
@@ -128,6 +130,9 @@
                       {% endif %}
                         <br id="{{ msg.body }}">
                        {{msg.body}}
+                      <div class="avatar avatar--medium">
+                    <img src="{{ msg.images.url}}" />
+                        </div>
 {#                      <a href="#{{  msg.reply }}" > {{ msg.body }} </a>#}
 {#                        {% else %}#}
 {##}
@@ -147,9 +152,16 @@
           </div>
 
                 <div class="room__message">
-            <form action="" method="POST">
+            <form action="" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                 <input name="body" placeholder="Write your message here..." /></form>
+                 <input name="body" placeholder="Write your message here..." />
+{#                {{ img.images }}#}
+{#                <a href="{% url 'add_image' room.id  %}">Add image</a>#}
+                <div class="form__action">
+{#                <button class="btn btn--main" type="submit">Submit</button>#}
+                </div>
+            </form>
+            <a href="{% url 'add_image' room.id  %}">Add image</a>
           </div>
 
         </div>

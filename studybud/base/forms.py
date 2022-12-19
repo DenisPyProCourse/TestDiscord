@@ -42,7 +42,7 @@ class UserForm(ModelForm):
 class MessageForm(ModelForm):
     class Meta:
         model = Message
-        fields = ['body']
+        fields = ['body', 'images']
 
 class ChatForm(ModelForm):
     class Meta:

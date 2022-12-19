@@ -57,6 +57,9 @@ class Chat(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
     # # @models.permalink
     # def get_absolute_url(self):
     #     return reverse('users:messages', (), {'chat_id': self.pk})
@@ -70,6 +73,7 @@ class Message(models.Model):
     # on_click = models.BooleanField(default=False)
     reply = models.TextField(blank=True, null=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
+    images = models.ImageField(null=True, default='avatar.svg', upload_to='static/images')
     class Meta:
         ordering = ['-updated', '-created']
 
