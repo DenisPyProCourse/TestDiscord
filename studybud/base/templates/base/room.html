@@ -130,10 +130,14 @@
                       {% endif %}
                         <br id="{{ msg.body }}">
                        {{msg.body}}
-                      <div class="avatar avatar--medium">
+{#                      <div class="avatar avatar--medium">#}
+                  {% if msg.images %}
+                  <div style="width: 200px">
                     <img src="{{ msg.images.url}}" />
+{#                  <img src="{% static msg.images.url %}" />#}
                         </div>
-{#                      <a href="#{{  msg.reply }}" > {{ msg.body }} </a>#}
+                  {% endif %}
+{#                      <a <hre></hre>f="#{{  msg.reply }}" > {{ msg.body }} </a>#}
 {#                        {% else %}#}
 {##}
 {#                            <br id="{{ msg.reply }}">#}
@@ -157,11 +161,11 @@
                  <input name="body" placeholder="Write your message here..." />
 {#                {{ img.images }}#}
 {#                <a href="{% url 'add_image' room.id  %}">Add image</a>#}
-                <div class="form__action">
+{#                <div class="form__action">#}
 {#                <button class="btn btn--main" type="submit">Submit</button>#}
-                </div>
+{#                </div>#}
             </form>
-            <a href="{% url 'add_image' room.id  %}">Add image</a>
+            <a href="{% url 'add_image_room' room.id  %}">Add image</a>
           </div>
 
         </div>
@@ -188,4 +192,5 @@
       </div>
     </main>
     <script src="script.js"></script>
+{#     <script src="{% static 'js/script.js' %}"></script>#}
 {% endblock %}

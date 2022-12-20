@@ -1,20 +1,12 @@
-import datetime
-import signal
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.template.loader import render_to_string
-from django.urls import reverse
-from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from .forms import MyUserCreationForm, MessageForm, ChatForm
+from .forms import MyUserCreationForm, MessageForm, ChatForm, MessgImg
 from django.db.models import Q, Count
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -131,24 +123,55 @@ def home(request):
     return render(request, 'base/home.html', context)
 
 def add_image(request, pk):
-    room = Room.objects.get(id=pk)
-    img = MessageForm()
-    # if request.method == "POST":
-    msg = Message.objects.create(
-    body='',
-    user=request.user,
-    room=room)
-    img = MessageForm(request.POST, request.FILES, instance=msg)
-    # img.body = ''
-    if img.is_valid():
-        # msg.images = img.images
-        # msg.
-        img.save()
-        msg.images = img.images
-        # msg.save()
-        # room.save()
-        return redirect('home')
-    return render(request, 'base/add_image.html', {'img': img, 'room': room})
+    room, chat = None, None
+    img = MessgImg()
+    print(request, "!!!!!!!")
+    if 'room' in request.path:
+        print('room in Request')
+    else:
+        print('no!!!!')
+    if 'room' in request.path:
+        room = Room.objects.get(id=pk)
+        if request.method == 'POST':
+            img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+                user=request.user,
+                body='',
+                room=room
+            ))
+            if img.is_valid():
+                img.save()
+                return redirect('room', room.id)
+    else:
+        chat = Chat.objects.get(id=pk)
+        if request.method == 'POST':
+            img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+                user=request.user,
+                body='',
+                chat=chat
+            ))
+            if img.is_valid():
+                img.save()
+                return redirect('chat', chat.id)
+
+    # if request.method == 'POST':
+    #         img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+    #         user=request.user,
+    #         body='',
+    #         room=room
+    #     ))
+    #         if img.is_valid():
+    #             img.save()
+    #             return redirect('room', room.id)
+    #     else:
+            # img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+            #     user=request.user,
+            #     body='',
+            #     chat=chat
+            # ))
+            # if img.is_valid():
+            #     img.save()
+            #     return redirect('chat', chat.id)
+    return render(request, 'base/add_image.html', {'img': img, 'room': room, 'chat': chat})
 
 def room(request, pk):
     # room = None
@@ -444,7 +467,7 @@ def edit_message(request, pk):
 def reply_message(request, pk):
     messg = Message.objects.get(id=pk)
     form = MessageForm(instance=messg)
-    pow = Message.objects.get(id=pk)
+    pow = 'Message.objects.get(id=messg.id)'
     if request.method == 'POST':
         if messg.room:
             messg = Message.objects.create(
@@ -453,7 +476,7 @@ def reply_message(request, pk):
                 body=request.POST.get('body'),
                 reply=messg
             )
-
+            # pow = Message.objects.get(id=messg.reply)
             return redirect('room', messg.room.id)
         else:
             messg = Message.objects.create(
@@ -462,103 +485,8 @@ def reply_message(request, pk):
                 body=request.POST.get('body'),
                 reply=messg
             )
+            # pow = Message.objects.get(id=messg.reply)
             return redirect('chat', messg.chat.id)
     context = {'form': form, 'messg': messg, 'pow': pow}
     return render(request, 'base/reply_messg.html', context)
 
-#
-# def dial_view(request):
-#     chats = Chat.objects.filter(members__in=[request.user.id])
-#     return render(request, 'base/dialoges.html', {'user_profile': request.user, 'chats': chats})
-#
-# def priv_mess_view(request, chat_id):
-#     if request.method == "GET":
-#         try:
-#             chat = Chat.objects.get(id=chat_id)
-#             if request.user in chat.members.all():
-#                 chat.message_set.filter(is_readed=False).exclude(author=request.user).update(is_readed=True)
-#             else:
-#                 chat = None
-#         except Chat.DoesNotExist:
-#             chat = None
-#
-#         return render(
-#             request,
-#             'base/priv_messg.html',
-#             {
-#                 'user_profile': request.user,
-#                 'chat': chat,
-#                 'form': MessageForm()
-#             }
-#         )
-#     elif request.method == "POST":
-#         form = PrivateMessageForm(data=request.POST)
-#         if form.is_valid():
-#             message = form.save(commit=False)
-#             message.chat_id = chat_id
-#             message.author = request.user
-#             message.save()
-#         return redirect(reverse('users:messages', kwargs={'chat_id': chat_id}))
-#
-# def create_dialog_viwe(request):
-#     # if request.method == "POST":
-#     #     add_user = request.POST.get('profile')
-#     #     chats = Chat.objects.filter(members__in=[request.user.id, add_user], type=Chat.DIALOG).annotate(
-#     #         c=Count('members')).filter(c=2)
-#     #     if chats.count() == 0:
-#     #         chat = Chat.objects.create()
-#     #         chat.members.add(request.user)
-#     #         chat.members.add(add_user)
-#     #     else:
-#     #         chat = chats.first()
-#     #
-#     #     return render(request, 'base/create_dialog.html', context={'add_user': add_user})
-#     # form = DialogForm()
-#     # topics = Topic.objects.all()
-#     if request.method == 'POST':
-#         add_user = request.POST.get('profile')
-#         chats = Chat.objects.filter(members__in=[request.user.id, add_user], type=Chat.DIALOG).annotate(
-#             c=Count('members')).filter(c=2)
-#         # topic_name = request.POST.get('topic')
-#         # topic, created = Topic.objects.get_or_create(name=topic_name)
-#         if chats.count() == 0:
-#             chat = Chat.objects.create()
-#             chat.members.add(request.user)
-#             chat.members.add(add_user)
-#         else:
-#             chat = chats.first()
-#             # host=request.user,
-#             # topic=topic,
-#             # name=request.POST.get('name'),
-#             # description=request.POST.get('description')
-#         # )
-#         # form = RoomForm(request.POST)
-#         # if form.is_valid():
-#         #     room = form.save(commit=False)
-#         #     room.host = request.user
-#         #     room.save()
-#         #       return redirect('home')
-#
-#         return redirect('home')
-#     context = {}
-#     return render(request, 'base/create_dialog.html', context)
-#
-# def dialog(request, pk):
-#     chats = Chat.objects.get(id=pk)
-#         # msgs = room.message_set.all().order_by('-created') # I'll add ordering at model Meta class instead of writing it here
-#     msgs = chats.message_set.all()
-#     # participants = room.participants.all()
-#     if request.method == "POST":
-#         msg = Message.objects.create(
-#             author=request.user,
-#             chat=dialog,
-#             message=request.POST.get('message')
-#         )
-#         # room.participants.add(request.user)
-#         return redirect('dialogs', pk=chats)
-#     context = {
-#         'chats': chats,
-#         'msgs': msgs,
-#         # 'participants': participants
-#     }
-#     return render(request, 'base/dialoges.html', context)

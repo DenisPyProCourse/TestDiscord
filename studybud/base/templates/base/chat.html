@@ -125,11 +125,18 @@
                   <div class="thread__details">
 {#                  <div>#}
                     {% if msg.reply %}
+
                         <a  href="#{{  msg.reply }}" >Replied to: "{{ msg.reply}}..."</a>
 {#                        <label for="{{ msg.reply }}">Replied to: "{{ msg.reply }}..."</label>#}
                       {% endif %}
                         <br id="{{ msg.body }}">
                        {{msg.body}}
+                  {% if msg.images %}
+                  <div style="width: 200px">
+                    <img src="{{ msg.images.url}}" />
+{#                  <img src="{% static msg.images.url %}" />#}
+                        </div>
+                  {% endif %}
                   </div>
                 </div>
                 {% endfor %}
@@ -138,9 +145,10 @@
           </div>
 
                 <div class="room__message">
-            <form action="" method="POST">
+            <form action="" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                  <input name="body" placeholder="Write your message here..." /></form>
+                    <a href="{% url 'add_image_chat' chat.id  %}">Add image</a>
           </div>
 
         </div>

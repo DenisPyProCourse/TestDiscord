@@ -20,7 +20,8 @@ urlpatterns = [
     path('delete_message/<int:pk>', delete_message, name='delete_message'),
     path('edit_message/<int:pk>', edit_message, name='edit_message'),
     path('reply_message/<int:pk>', reply_message, name='reply_message'),
-    path('room/<int:pk>/add_image/', add_image, name='add_image'),
+    path('room/<int:pk>/add_image/', add_image, name='add_image_room'),
+    path('chat/<int:pk>/add_image/', add_image, name='add_image_chat'),
 
     path('login/', login_page, name='login'),
     path('logout/', logout_user, name='logout'),

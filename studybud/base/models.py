@@ -73,7 +73,7 @@ class Message(models.Model):
     # on_click = models.BooleanField(default=False)
     reply = models.TextField(blank=True, null=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
-    images = models.ImageField(null=True, default='avatar.svg', upload_to='static/images')
+    images = models.ImageField(null=True, upload_to='mess_img/')
     class Meta:
         ordering = ['-updated', '-created']
 

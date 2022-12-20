@@ -21,15 +21,16 @@
                     </div>
                 </div>
                 <div class="layout__body">
-                    <form class="form" action="" method="POST" enctype="multipart/form-data" >
+                    <form class="form" action="" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 {#                    {% for field in img %}#}
                         <div class="form__group">
-                            <label for="profile_pic">{{ img.images.label }}</label>
-                            {{img.images}}
-                            {% if form.errors %}
+{#                            <label for="profile_pic">{{ img.images.label }}</label>#}
+                            {{img.as_p}}
+{#                            {{ msg.images.url }}#}
+                            {% if img.errors %}
 {#                        {% for field in form %}#}
-                            {% for error in field.errors %}
+                            {% for error in img.images.errors %}
                                 <div class="alert alert-danger">
                                     <strong>{{ error|escape }}</strong>
                                 </div>
@@ -41,11 +42,11 @@
 {#                            </div>#}
 {#                        {% endfor %}#}
                     {% endif %}
+
                         </div>
 
                         <div class="form__action">
-{#                            <a class="btn btn--dark" href="index.html">Cancel</a>#}
-                            <button  class="btn btn--main" type="submit">Update</button>
+                            <button href="{% url 'home' %}" class="btn btn--main" type="submit">Update</button>
                         </div>
 
                     </form>
