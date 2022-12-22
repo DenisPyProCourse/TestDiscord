@@ -27,7 +27,7 @@ class Room(models.Model):
     host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
-    description = models.TextField(max_length=250, null=True, blank = True) # null for DB, blank for Forms
+    description = models.TextField(max_length=250, null=True, blank=True) # null for DB, blank for Forms
     participants = models.ManyToManyField(User, related_name='participants', blank=True) # we have User model already, and need to add related name which will be not the same
     updated = models.DateTimeField(auto_now=True) # auto_now update time after every update
     created = models.DateTimeField(auto_now_add=True) # auto_now_add make the time only once after creation
@@ -39,23 +39,12 @@ class Room(models.Model):
         return self.name
 
 class Chat(models.Model):
-    # DIALOG = 'D'
-    # CHAT = 'C'
-    # CHAT_TYPE_CHOICES = (
-    #     (DIALOG, _('Dialog')),
-    #     (CHAT, _('Chat'))
-    # )
-    #
-    # type = models.CharField(
-    #     _('Тип'),
-    #     max_length=1,
-    #     choices=CHAT_TYPE_CHOICES,
-    #     default=DIALOG
-    # )
+
     name = models.CharField(max_length=200)
     members = models.ManyToManyField(User, verbose_name=_("Member"), related_name='members')
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(max_length=250, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -71,7 +60,7 @@ class Message(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     # on_click = models.BooleanField(default=False)
-    reply = models.TextField(blank=True, null=True)
+    reply = models.IntegerField(blank=True, null=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
     images = models.ImageField(null=True, upload_to='mess_img/')
     class Meta:

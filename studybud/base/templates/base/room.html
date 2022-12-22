@@ -125,10 +125,15 @@
                   <div class="thread__details">
 {#                  <div>#}
                     {% if msg.reply %}
-                        <a  href="#{{  msg.reply }}" >Replied to: "{{ msg.reply}}..."</a>
-{#                        <label for="{{ msg.reply }}">Replied to: "{{ msg.reply }}..."</label>#}
-                      {% endif %}
-                        <br id="{{ msg.body }}">
+                            <a  href="#{{  msg.reply }}" >Replied to
+                                {% for i in mesag %}
+                                {% if msg.reply == i.id %}
+                                    @{{ i.user.username}}: "{{ i }}..."
+                                {% endif %}
+                                {% endfor %}
+                            </a>
+              {% endif %}
+                        <br id="{{ msg.id }}">
                        {{msg.body}}
 {#                      <div class="avatar avatar--medium">#}
                   {% if msg.images %}

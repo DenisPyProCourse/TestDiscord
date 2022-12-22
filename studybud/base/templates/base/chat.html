@@ -66,15 +66,16 @@
                 <span>{{ chat.updated|timesince}} ago</span>
               </div>
               <div class="room__hosted">
-                <p>Members</p>
-                  {% for user in chat.members.all %}
-                <a href="{% url 'user_profile' user.id %}" class="room__author">
-                  <div class="avatar avatar--small">
-                    <img src="{{ user.avatar.url}}" />
-                  </div>
-                  <span>@{{ user.username }}</span>
-                </a>
-                  {% endfor %}
+                <p>Description</p>
+                  {{  chat.description }}
+{#                  {% for user in chat.members.all %}#}
+{#                <a href="{% url 'user_profile' user.id %}" class="room__author">#}
+{#                  <div class="avatar avatar--small">#}
+{#                    <img src="{{ user.avatar.url}}" />#}
+{#                  </div>#}
+{#                  <span>@{{ user.username }}</span>#}
+{#                </a>#}
+{#                  {% endfor %}#}
               </div>
               <div class="room__details">
 {#                  {{ room.description}}#}
@@ -125,11 +126,15 @@
                   <div class="thread__details">
 {#                  <div>#}
                     {% if msg.reply %}
-
-                        <a  href="#{{  msg.reply }}" >Replied to: "{{ msg.reply}}..."</a>
-{#                        <label for="{{ msg.reply }}">Replied to: "{{ msg.reply }}..."</label>#}
-                      {% endif %}
-                        <br id="{{ msg.body }}">
+                            <a  href="#{{  msg.reply }}" >Replied to
+                                {% for i in mesag %}
+                                {% if msg.reply == i.id %}
+                                    @{{ i.user.username}}: "{{ i }}..."
+                                {% endif %}
+                                {% endfor %}
+                            </a>
+                        {% endif %}
+                        <br id="{{ msg.id }}">
                        {{msg.body}}
                   {% if msg.images %}
                   <div style="width: 200px">
