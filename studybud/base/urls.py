@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path
 from .views import home, room, create_room, update_room, delete_room, login_page, logout_user, register_user, \
     delete_message, user_profile, update_user, topics_page, activity_page, edit_message, reply_message, activate, \
-    private_messages, create_chat, chat, update_chat, delete_chat, add_image
+    private_messages, create_chat, chat, update_chat, delete_chat, add_image, add_friend, friends_list, delete_friend
 
 # dial_view, create_dialog_viwe, priv_mess_view, dialog
 
@@ -40,4 +40,7 @@ urlpatterns = [
     # path('dialogs/<int:pk>', login_required(dialog), name='dialogs'),
     # path('dialogs/create/', login_required(create_dialog_viwe), name='create_dialog'),
     # path('dialogs/<int:chat_id>', login_required(priv_mess_view), name='messages'),
+    path('add_friend/<int:pk>', add_friend, name='add_friend'),
+    path('delete_friend/<int:pk>', delete_friend, name='delete_friend'),
+    path('friends_list/', friends_list, name='friends_list'),
 ]

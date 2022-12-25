@@ -82,3 +82,7 @@ class PrivateMessage(models.Model):
 
     def __str__(self):
         return self.message
+
+class Friends(models.Model):
+    friend = models.ManyToManyField(User, verbose_name=_("Friend"), related_name='friends')
+    is_friend = models.BooleanField(default=False)

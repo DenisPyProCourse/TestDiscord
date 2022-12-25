@@ -29,6 +29,12 @@
 {#                    <a href="{% url 'chat' chat.id %}">Chat</a>#}
 {#                {% else %}#}
           {% if request.user.id != user.id %}
+              <form method="POST" action="" >
+              {% csrf_token %}
+              <a href="{% url 'add_friend' user.id %}">Add friend</a>
+              </form>
+          {% endif %}
+              {% if request.user.id != user.id %}
                 {% if chats.id %}
           <a href="{% url 'chat' chats.id %}">Chat</a>
             {% else %}

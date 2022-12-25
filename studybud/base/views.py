@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from .forms import RoomForm, UserForm
-from .models import Room, Topic, Message, User, Chat
+from .models import Room, Topic, Message, User, Chat, Friends
 from django.utils.encoding import force_bytes, force_str
 from django.core.paginator import Paginator
 
@@ -311,32 +311,6 @@ def delete_chat(request, pk):
     context = {'obj': chat}
     return render(request, 'base/delete.html', context)
 
-def user_profile(request, pk):
-    user = User.objects.get(id=pk)
-    rooms = user.room_set.all()
-    room_count = rooms.count()
-    room_messages = user.message_set.all()
-    topics = Topic.objects.all()[0:5]
-    # dialog = user.chat_set.
-    # chats = Chat.objects.get(pk=2)
-    chats = Chat.objects.filter(members__in=[request.user.id, user.id]).annotate(
-        c=Count('members')).filter(c=2)
-    if request.method == 'POST':
-        if chats.count() == 0:
-            create_chat(pk=pk)
-        else:
-            chats = chats.first()
-    chats = chats.first()
-            # return redirect('chat', pk=chats.id)
-    context = {
-        'user': user,
-        'rooms': rooms,
-        'room_messages': room_messages,
-        'topics': topics,
-        'room_count': room_count,
-        'chats': chats
-    }
-    return render(request, 'base/profile.html', context)
 
 @login_required(login_url='login')
 def create_room(request):
@@ -492,3 +466,118 @@ def reply_message(request, pk):
     context = {'form': form, 'messg': messg, 'pow': pow}
     return render(request, 'base/reply_messg.html', context)
 
+def add_friend(request, pk):
+    user_friend = User.objects.get(id=pk)
+    # form = ChatForm()
+    if request.method == 'POST':
+        friend = Friends.objects.create()
+        friend.friend.add(request.user)
+        friend.friend.add(user_friend)
+        friend.is_friend = True
+        return redirect('user_profile', pk=user_friend.id)
+    # return HttpResponse('SSS')
+    # user_friend = User.objects.get(id=pk)
+    # friends = Friends.objects.filter(friend__in=[request.user.id, user_friend.id]).annotate(
+    #     c=Count('friend')).filter(c=2)
+    # if request.method == 'POST':
+    #     if friends.count() == 2:
+    #         if friends.first().is_friend == False:
+    #             friends.first().is_friend = True
+    #         else:
+    #             friends.first().is_friend = False
+    #     else:
+    #         friend = Friends.objects.create(
+    #             is_friend=True
+    #         )
+    #         friend.friend.add(request.user)
+    #         friend.friend.add(user_friend)
+    #         return redirect('user_profile', user_friend.id)
+    return render(request, 'base/add_friend.html', context={'user_friend': user_friend.username})
+    # return redirect('user_profile', user.id)
+
+def delete_friend(request, pk):
+    friend = Friends.objects.get(id=pk)
+    if request.method == 'POST':
+            friend.delete()
+            return redirect('home')
+    return render(request, 'base/delete.html', context={'obj': friend})
+
+def friends_list(request):
+    friends = Friends.objects.filter(friend__id=request.user.id)
+    # for i in friends:
+    #     users = User.objects.filter(id=friends)
+    print(friends)
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    rooms = Room.objects.filter(
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q) |
+        Q(host__first_name__icontains=q)
+    )
+    topics = Topic.objects.all()[0:5]
+    friends_count = friends.count()
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
+    # if receiver(post_save, sender=User):
+    #     if created:
+    #         messages.error(request, 'Email')
+
+    context = {
+        'friends': friends,
+        # 'users': users,
+        'rooms': rooms,
+        'topics': topics,
+        'friends_count': friends_count,
+        'room_messages': room_messages
+    }
+    return render(request, 'base/friends_list.html', context)
+
+def user_profile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_count = rooms.count()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()[0:5]
+
+    chats = Chat.objects.filter(members__in=[request.user.id, user.id]).annotate(
+        c=Count('members')).filter(c=2)
+    friends = Friends.objects.filter(friend__in=[request.user.id, user.id])
+    # print(friends.first().friend)
+    # if request.method == 'POST':
+    #     if friends.count() == 2:
+    #         if friends.first().is_friend == False:
+    #             friends.first().is_friend = True
+    #         else:
+    #             friends.first().is_friend = False
+    #     else:
+    #         friend = Friends.objects.create(
+    #             is_friend=True
+    #         )
+    #         friend.friend.add(request.user)
+    #         friend.friend.add(user_friend)
+    #         return redirect('user_profile', user_friend.id)
+    # add_friend(request=request, pk=pk)
+    if request.method == 'POST':
+        if chats.count() == 0:
+            create_chat(pk=pk)
+        else:
+            chats = chats.first()
+        # if friends.first() is None:
+        #     add_friend(pk=pk)
+        # else:
+        #     if friends.first().is_friend == False:
+        #         friends.first().is_friend = True
+        #     else:
+        #         friends.first().is_friend = False
+
+
+    chats = chats.first()
+    context = {
+        'user': user,
+        'rooms': rooms,
+        'room_messages': room_messages,
+        'topics': topics,
+        'room_count': room_count,
+        'chats': chats,
+        'friends': friends
+    }
+    return render(request, 'base/profile.html', context)
