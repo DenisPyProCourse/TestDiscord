@@ -33,34 +33,64 @@
             </div>
           </div>
 
-            <div class="roomListRoom__header">
+            <div class="roomListRoom__content">
+{#            <datalist>#}
 {#            {% for user in users %}#}
                 {% for friend in friends %}
 
 {#                        {% if friend.user_id == user.id %}#}
 {#            {% for us in users %}#}
 {#                {% if us in chat.members.all %}#}
+                {% for con in connection %}
+
+                    {% if friend.id != request.user.id %}
+                        {% if con.is_friend is False %}
+                            {% if con.host_friend == request.user %}
+                                <span>Waiting for {{ con }}'s confirmation</span>
+                                {% endif %}
+                            {% if con.host_friend != request.user %}
+                            <form method="POST" action="" >
+                        {% csrf_token %}
+{#                        <div>#}
+                    <a href="{% url 'friend_request' con.id %}">New request</a>
+{#                            </div>#}
+                            </form>
+                                {% endif %}
+                            {% else %}
+                            <div>
               <a href="{% url 'user_profile' friend.id %}" class="roomListRoom__author">
                 <div class="avatar avatar--small">
-                  <img src="{{ friend.id.avatar.url }}" />
+                  <img src="{{ friend.avatar.url }}" />
                 </div>
-                <span>@{{ friend.id.username }}</span>
+                <span>@{{ friend.username }}</span>
               </a>
-{#                        {% endif %}#}
-{#                {% endif %}#}
+                                <a href="{% url 'delete_friend' con.id %}">
+                                    <small>Delete friend </small>
+              </a>
+{#                        {% if friend.is_authenticated %}#}
+                            <p class="text-muted">{{ friend.get_online_info }}</p>
+{#                            {% endif %}#}
+                        </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+{#                </datalist>#}
 {#                {% endfor %}#}
-              <div class="roomListRoom__actions">
+{#            {% for chat  in chats %}#}
+{#            {% if friend in chat.members.all and friend != request.user %}#}
+{#              <div class="roomListRoom__actions">#}
 {#                <span> {{ chat.updated|timesince }} ago</span>#}
 {#                  {% endfor %}#}
-            {% endfor %}
-              </div>
-            </div>
-            <div class="roomListRoom__content">
+{#            {% endfor %}#}
+{##}
+{#              </div>#}
+{#            </div>#}
+{#            <div class="roomListRoom__content">#}
 {#              <a href="{% url 'chat' chat.id %}">{{ chat.name}}</a>#}
 {#                    {{ chat.name }}#}
-            </div>
-
-            <div class="roomListRoom__meta">
+{#            </div>#}
+{##}
+{#            <div class="roomListRoom__meta">#}
 {#              <a href="{% url 'chat' chat.id %}" class="roomListRoom__joined">#}
 {#                {{ chat.members.count }}#}
 {#                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">#}
@@ -81,10 +111,20 @@
 {#                   Joined#}
 {#              </a>#}
 {#              <p class="roomListRoom__topic">{{ room.topic.name }}</p>#}
+                <br>
+{#                <br>#}
+{#            {% endif %}#}
+            {% endfor %}
+{#                {% endfor %}#}
             </div>
 
+{#                    {% endif %}#}
+{#                    {% endfor %}#}
+{#            <br>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#                {% endfor %}#}
           </div>
-
         {% include 'base/activity_component.html' %}
         </div>
   </main>

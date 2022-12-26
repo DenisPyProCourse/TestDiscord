@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -12,12 +13,34 @@ class User(AbstractUser):
     lnkdn = models.CharField(max_length=150, null=True, blank=True)
 
     avatar = models.ImageField(null=True, default='avatar.svg')
+    last_online = models.DateTimeField(blank=True, null=True)
+
+    # In this method, check that the date of the last visit is not older than 15 minutes
+    def is_online(self):
+        if self.last_online:
+            return (timezone.now() - self.last_online) < timezone.timedelta(minutes=15)
+        return False
+
+    # If the user visited the site no more than 15 minutes ago,
+    def get_online_info(self):
+        if self.is_online():
+            # then we return information that he is online
+            return _('Online')
+        if self.last_online:
+            # otherwise we write a message about the last visit
+            return _('Last visit {}').format(naturaltime(self.last_online))
+            # If you have only recently added information about a user visiting the site
+            # then for some users there may not be any information about the visit, we will return information that the last visit is unknown
+        return _('Unknown')
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
 
 class Topic(models.Model):
     name = models.CharField(max_length=200)
+    updated = models.DateTimeField(auto_now=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
@@ -86,3 +109,14 @@ class PrivateMessage(models.Model):
 class Friends(models.Model):
     friend = models.ManyToManyField(User, verbose_name=_("Friend"), related_name='friends')
     is_friend = models.BooleanField(default=False)
+    host_friend = models.ForeignKey(User,
+                                    verbose_name=_("Host friend"),
+                                    on_delete=models.CASCADE,
+                                    related_name='host_friend',
+                                    null=True)
+
+    def __str__(self):
+        users = User.objects.filter(friends=self)
+        for i in users:
+            if i != self.host_friend:
+                return i.username

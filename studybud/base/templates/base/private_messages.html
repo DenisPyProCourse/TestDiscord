@@ -35,13 +35,14 @@
         {% for chat in chats %}
             <div class="roomListRoom__header">
             {% for us in users %}
-                {% if us in chat.members.all %}
+                {% if us in chat.members.all and us != request.user %}
               <a href="{% url 'user_profile' us.id %}" class="roomListRoom__author">
                 <div class="avatar avatar--small">
                   <img src="{{ us.avatar.url }}" />
                 </div>
                 <span>@{{ us.username }}</span>
               </a>
+{#                    <br>#}
                 {% endif %}
                 {% endfor %}
               <div class="roomListRoom__actions">
@@ -74,6 +75,7 @@
               </a>
 {#              <p class="roomListRoom__topic">{{ room.topic.name }}</p>#}
             </div>
+                <br>
                 {% endfor %}
           </div>
         {% include 'base/activity_component.html' %}

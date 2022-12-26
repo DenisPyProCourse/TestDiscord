@@ -23,7 +23,17 @@
                     <form class="form" action="" method="POST">
                         {% csrf_token %}
                         <div class="form__group">
-                            <p>Are you sure you want to add "{{ user_friend }}" to your friends' list?</p>
+                        {% if user_friend.count > 1 %}
+                            {% for user in user_friend %}
+                                {% if user != request.user %}
+                            <p>Are you sure you want to add "{{ user.username }}" to your friends' list?</p>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+{#                            {% if user != request.user %}#}
+                        <p>Are you sure you want to add "{{ user_friend.username }}" to your friends' list?</p>
+{#                                {% endif %}#}
+                        {% endif %}
                         </div>
 
                         <div class="for__group">
