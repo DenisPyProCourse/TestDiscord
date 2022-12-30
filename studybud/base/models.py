@@ -61,6 +61,8 @@ class Room(models.Model):
     def __str__(self):
         return self.name
 
+
+
 class Chat(models.Model):
 
     name = models.CharField(max_length=200)
@@ -76,21 +78,23 @@ class Chat(models.Model):
     # def get_absolute_url(self):
     #     return reverse('users:messages', (), {'chat_id': self.pk})
 
-class Message(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # One to Many relationship, mes - child, room - father
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True) # Cascade means that if we delete parent(room) - child will dead
-    body = models.TextField() # user should to input smthng here
-    updated = models.DateTimeField(auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
-    # on_click = models.BooleanField(default=False)
-    reply = models.IntegerField(blank=True, null=True)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
-    images = models.ImageField(null=True, upload_to='mess_img/')
-    class Meta:
-        ordering = ['-updated', '-created']
-
-    def __str__(self):
-        return self.body[0:50] # representation view must not be so large
+# class Message(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE) # One to Many relationship, mes - child, room - father
+#     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True) # Cascade means that if we delete parent(room) - child will dead
+#     body = models.TextField() # user should to input smthng here
+#     updated = models.DateTimeField(auto_now=True)
+#     created = models.DateTimeField(auto_now_add=True)
+#     # on_click = models.BooleanField(default=False)
+#     reply = models.IntegerField(blank=True, null=True)
+#     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
+#     images = models.ImageField(null=True, upload_to='mess_img/')
+#     private_room = models.ForeignKey(Private_Room, on_delete=models.CASCADE, null=True)
+#
+#     class Meta:
+#         ordering = ['-updated', '-created']
+#
+#     def __str__(self):
+#         return self.body[0:50] # representation view must not be so large
 
 
 class PrivateMessage(models.Model):
@@ -120,3 +124,44 @@ class Friends(models.Model):
         for i in users:
             if i != self.host_friend:
                 return i.username
+
+
+class Private_Room(models.Model):
+    host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(max_length=250, null=True, blank=True) # null for DB, blank for Forms
+    # participants = models.ManyToManyField(User, related_name='participants', blank=True) # we have User model already, and need to add related name which will be not the same
+    updated = models.DateTimeField(auto_now=True) # auto_now update time after every update
+    created = models.DateTimeField(auto_now_add=True) # auto_now_add make the time only once after creation
+    friends = models.ManyToManyField(Friends, related_name='friends', blank=True)
+
+    # def get_friends(self):
+    #     friends = Friends.objects.filter(friends=self)
+    #     for i in friends:
+    #         if i != self.host:
+    #             return i.username
+
+    class Meta:
+        ordering = ['-updated', '-created']
+
+    def __str__(self):
+        return self.name
+
+class Message(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # One to Many relationship, mes - child, room - father
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True) # Cascade means that if we delete parent(room) - child will dead
+    body = models.TextField() # user should to input smthng here
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    # on_click = models.BooleanField(default=False)
+    reply = models.IntegerField(blank=True, null=True)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True)
+    images = models.ImageField(null=True, upload_to='mess_img/')
+    private_room = models.ForeignKey(Private_Room, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        ordering = ['-updated', '-created']
+
+    def __str__(self):
+        return self.body[0:50] # representation view must not be so large

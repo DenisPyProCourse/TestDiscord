@@ -8,13 +8,13 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from .forms import MyUserCreationForm, MessageForm, ChatForm, MessgImg
+from .forms import MyUserCreationForm, MessageForm, ChatForm, MessgImg, PrivateRoomForm, PrivateRoomFormCreate
 from django.db.models import Q, Count
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from .forms import RoomForm, UserForm
-from .models import Room, Topic, Message, User, Chat, Friends
+from .models import Room, Topic, Message, User, Chat, Friends, Private_Room
 from django.utils.encoding import force_bytes, force_str
 from django.core.paginator import Paginator
 
@@ -222,7 +222,73 @@ def room(request, pk):
     return render(request, 'base/room.html', context)
 
 
+def private_room(request, pk):
+    priv_room = Private_Room.objects.get(id=pk)
+    msgs = priv_room.message_set.all()
+    friends = priv_room.friends.all()
+    ids = []
+    for i in msgs:
+        if i.reply:
+            ids.append(i.reply)
+    mesag = Message.objects.filter(id__in=ids)
+    if request.method == "POST":
+        msg = Message.objects.create(
+            user=request.user,
+            room=room,
+            body=request.POST.get('body'))
+        priv_room.friends.add(request.user)
+        priv_room.updated = msg.created
+        priv_room.save()
+        return redirect('private_room', pk=priv_room.id)
+    context = {
+        'priv_room': priv_room,
+        'msgs': msgs,
+        'friends': friends,
+        'mesag': mesag
+    }
+    return render(request, 'base/private_room.html', context)
 
+@login_required(login_url='login')
+def create_private_room(request):
+    form = PrivateRoomFormCreate()
+    # form.host = r
+    friends = Friends.objects.filter(Q(is_friend=True) |
+                                    Q(host_friend_id=request.user.id))
+    if request.method == 'POST':
+        # friends_name = request.POST.get('friends')
+        # friends = Friends.objects.get(friend__username=friends_name)
+        # topic_name = request.POST.get('topic')
+        # topic, created = Topic.objects.get_or_create(name=topic_name)
+        # Private_Room.objects.create(
+        #     host=request.user
+        #     friends=Friends.objects.filter(Q(is_friend=True) |
+        #                             Q(host_friend_id=request.user.id)),
+        #     name=request.POST.get('name'),
+        #     description=request.POST.get('description')
+        # )
+        # topic.updated = datetime.datetime.now()
+        # topic.save()
+        form = PrivateRoomFormCreate(request.POST)
+        # form.fields['friends'].choices = Friends.objects.filter(Q(is_friend=True) |
+        #                             Q(host_friend=request.user))
+        if form.is_valid():
+            priv_room = form.save(commit=False)
+            priv_room.host = request.user
+            priv_room.name = request.POST.get('name')
+            priv_room.description = request.POST.get('description')
+            priv_room.save()
+
+        #     room.save()
+        #       return redirect('home')
+
+        return redirect('private_messages', request.user.id)
+    context = {'form': form, 'friends': friends}
+    return render(request, 'base/private_room_form.html', context)
+
+def private_rooms_list(request):
+    private_rooms = Private_Room.objects.filter(host=request.user)
+
+    return render(request, 'base/private_rooms_list.html', context={'private_rooms': private_rooms})
 
 
 @login_required(login_url='login')
@@ -233,6 +299,8 @@ def private_messages(request, pk):
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
     chats = Chat.objects.filter(members=request.user.id).order_by('-updated')
     users = User.objects.filter(members__members=request.user.id)
+    # private_rooms = Private_Room.objects.filter(host=request.user)
+    # private_room()
     # users = []
     # for i in chats:
     #     # print(i.members.all())
@@ -248,7 +316,8 @@ def private_messages(request, pk):
         'chats': chats,
         'topics': topics,
         'room_messages': room_messages,
-        'users': users
+        'users': users,
+        # 'private_rooms': private_rooms
     }
     return render(request, 'base/private_messages.html', context)
 

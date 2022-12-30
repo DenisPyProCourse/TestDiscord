@@ -1,7 +1,11 @@
+from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import Room, User, Message, PrivateMessage, Chat
+# from django.http import request
+
+from .models import Room, User, Message, PrivateMessage, Chat, Private_Room, Friends
 
 
 class MyUserCreationForm(UserCreationForm):
@@ -25,6 +29,27 @@ class RoomForm(ModelForm):
         model = Room
         fields = '__all__'
         exclude = ['host', 'participants']
+
+class PrivateRoomForm(ModelForm):
+    class Meta:
+        model = Private_Room
+        fields = '__all__'
+        exclude = ['host']
+
+
+class PrivateRoomFormCreate(PrivateRoomForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.fields['host'] = request.user
+        self.fields['friends'] = forms.ChoiceField(
+            choices=[
+                (friend.pk, f'{friend}') for friend in
+                Friends.objects.all()
+            ],
+            label='friends',
+            required=False,
+        )
 
 class UserForm(ModelForm):
     class Meta:

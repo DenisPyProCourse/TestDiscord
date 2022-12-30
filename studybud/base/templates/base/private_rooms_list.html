@@ -32,14 +32,14 @@
               <h2>Study Room</h2>
               <p>{{ room_count}} Rooms available</p>
             </div>
-            <a class="btn btn--main" href="{% url 'private_rooms_list' %}">
+            <a class="btn btn--main" href="{% url 'create_private_room' %}">
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                 <title>add</title>
                 <path
                   d="M16.943 0.943h-1.885v14.115h-14.115v1.885h14.115v14.115h1.885v-14.115h14.115v-1.885h-14.115v-14.115z"
                 ></path>
               </svg>
-               Private Rooms
+              Create Private Room
             </a>
           </div>
           <div class="roomList__header">
@@ -47,30 +47,30 @@
               <h2>Messages</h2>
             </div>
           </div>
-        {% for chat in chats %}
-            <div class="roomListRoom__header">
-            {% for us in users %}
-                {% if us in chat.members.all and us != request.user %}
-              <a href="{% url 'user_profile' us.id %}" class="roomListRoom__author">
-                <div class="avatar avatar--small">
-                  <img src="{{ us.avatar.url }}" />
-                </div>
-                <span>@{{ us.username }}</span>
-              </a>
+        {% for room in private_rooms %}
+{#            <div class="roomListRoom__header">#}
+{#            {% for us in users %}#}
+{#                {% if us in chat.members.all and us != request.user %}#}
+{#              <a href="{% url 'user_profile' us.id %}" class="roomListRoom__author">#}
+{#                <div class="avatar avatar--small">#}
+{#                  <img src="{{ us.avatar.url }}" />#}
+{#                </div>#}
+{#                <span>@{{ us.username }}</span>#}
+{#              </a>#}
 {#                    <br>#}
-                {% endif %}
-                {% endfor %}
-              <div class="roomListRoom__actions">
-                <span> {{ chat.updated|timesince }} ago</span>
-              </div>
-            </div>
+{#                {% endif %}#}
+{#                {% endfor %}#}
+{#              <div class="roomListRoom__actions">#}
+{#                <span> {{ chat.updated|timesince }} ago</span>#}
+{#              </div>#}
+{#            </div>#}
             <div class="roomListRoom__content">
-              <a href="{% url 'chat' chat.id %}">{{ chat.name}}</a>
-                    {{ chat.name }}
+              <a href="{% url 'private_room' room.id %}">{{ room.name}}</a>
+                    {{ room.name }}
             </div>
             <div class="roomListRoom__meta">
-              <a href="{% url 'chat' chat.id %}" class="roomListRoom__joined">
-                {{ chat.members.count }}
+              <a href="{% url 'private_room' room.id %}" class="roomListRoom__joined">
+{#                {{ chat.members.count }}#}
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                   <title>user-group</title>
                   <path
