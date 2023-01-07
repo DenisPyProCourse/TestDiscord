@@ -36,27 +36,33 @@
             <div class="roomListRoom__content">
 {#            <datalist>#}
 {#            {% for user in users %}#}
-                {% for friend in friends %}
+{#                {% for friend in friends %}#}
 
 {#                        {% if friend.user_id == user.id %}#}
 {#            {% for us in users %}#}
 {#                {% if us in chat.members.all %}#}
-                {% for con in connection %}
-
-                    {% if friend.id != request.user.id %}
-                        {% if con.is_friend is False %}
+{#                {% for con in connection %}#}
+{#                {% if friend.friends.id != con.friend %}#}
+{#                    {% if friend.id != request.user.id %}#}
+                        {% for con in connection %}
+                        {% if con.is_friend is False%}
                             {% if con.host_friend == request.user %}
                                 <span>Waiting for {{ con }}'s confirmation</span>
+
                                 {% endif %}
-                            {% if con.host_friend != request.user %}
+                            {% if con.host_friend.id != request.user.id %}
                             <form method="POST" action="" >
                         {% csrf_token %}
 {#                        <div>#}
                     <a href="{% url 'friend_request' con.id %}">New request</a>
 {#                            </div>#}
                             </form>
+{#                                {% endfor %}#}
                                 {% endif %}
+
                             {% else %}
+                            {% for friend in con.friend.all %}
+                            {% if friend.id != request.user.id  %}
                             <div>
               <a href="{% url 'user_profile' friend.id %}" class="roomListRoom__author">
                 <div class="avatar avatar--small">
@@ -71,9 +77,11 @@
                             <p class="text-muted">{{ friend.get_online_info }}</p>
 {#                            {% endif %}#}
                         </div>
-                            {% endif %}
-                        {% endif %}
+                                {% endif %}
+{#                        {% endif %}#}
+{#                    {% endif %}#}
                     {% endfor %}
+                    {% endif %}
 {#                </datalist>#}
 {#                {% endfor %}#}
 {#            {% for chat  in chats %}#}

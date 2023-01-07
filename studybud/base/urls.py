@@ -3,7 +3,8 @@ from django.urls import path
 from .views import home, room, create_room, update_room, delete_room, login_page, logout_user, register_user, \
     delete_message, user_profile, update_user, topics_page, activity_page, edit_message, reply_message, activate, \
     private_messages, create_chat, chat, update_chat, delete_chat, add_image, add_friend, friends_list, delete_friend, \
-    friend_request, private_room, create_private_room, private_rooms_list
+    friend_request, private_room, create_private_room, private_rooms_list, update_private_room, priv_room_add_friends, \
+    priv_room_delete_friends
 
 # dial_view, create_dialog_viwe, priv_mess_view, dialog
 
@@ -49,6 +50,9 @@ urlpatterns = [
     path('private_room/<int:pk>', private_room, name='private_room'),
     path('create_private_room', create_private_room, name='create_private_room'),
     path('private_rooms_list', private_rooms_list, name='private_rooms_list'),
+    path('update_private_room/<int:pk>', update_private_room, name='update_private_room'),
+    path('add_friends_private_room/<int:pk>', priv_room_add_friends, name='add_friend_pr_r'),
+    path('private_room/<int:rm_pk>/delete_friend/<int:us_pk>', priv_room_delete_friends, name='delete_priv_room'),
     # path('update_private_room/<int:pk>', update_private_room, name='update_private_room'),
     # path('delete_private_room/<int:pk>', delete_private_room, name='delete_private_room'),
 ]

@@ -37,19 +37,47 @@ class PrivateRoomForm(ModelForm):
         exclude = ['host']
 
 
+
 class PrivateRoomFormCreate(PrivateRoomForm):
+    # model = Private_Room
+    # class Meta()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['host'] = request.user
-        self.fields['friends'] = forms.ChoiceField(
+        # self.fields['host'] = self.instance.host
+        self.fields['room_friends'] = forms.MultipleChoiceField(
             choices=[
-                (friend.pk, f'{friend}') for friend in
-                Friends.objects.all()
+                (friend.id, f'{friend.username}') for friend in
+                # (User.objects.get(username=friend), f'{User.objects.get(username=friend)}') for friend in
+                # Friends.objects.filter((Q(is_friend=True) |
+                #                     Q(host_friend_id=self.instance.id)))
+                User.objects.filter((Q(friends__is_friend=True) &
+                                     Q(friends__host_friend_id=self.instance.host.id))) if
+                friend.id != self.instance.host.id and friend not in self.instance.room_friends.all()
             ],
-            label='friends',
+            label='room_friends',
             required=False,
         )
+
+    class Meta(PrivateRoomForm.Meta):
+        exclude = ['host', 'name', 'description', 'updated', 'created']
+
+
+# class PrivateRoomAddFriend(PrivateRoomForm):
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # self.fields['host'] = request.user
+#         self.fields['friends'] = forms.ChoiceField(
+#             choices=[
+#                 (friend.pk, f'{friend}') for friend in
+#                 Friends.objects.all()
+#             ],
+#             label='friends',
+#             required=False,
+#         )
+#         class Meta:
+#             fields = ['friends']
 
 class UserForm(ModelForm):
     class Meta:

@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
+    username = models.CharField(unique=True, max_length=200, null=True)
     email = models.EmailField(unique=True, null=True)
     bio = models.TextField(null=True, default='', blank=True)
     lnkdn = models.CharField(max_length=150, null=True, blank=True)
@@ -35,6 +36,9 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.name
 
 
 class Topic(models.Model):
@@ -131,10 +135,10 @@ class Private_Room(models.Model):
     # topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=250, null=True, blank=True) # null for DB, blank for Forms
-    # participants = models.ManyToManyField(User, related_name='participants', blank=True) # we have User model already, and need to add related name which will be not the same
+    room_friends = models.ManyToManyField(User, related_name='room_friends', blank=True) # we have User model already, and need to add related name which will be not the same
     updated = models.DateTimeField(auto_now=True) # auto_now update time after every update
     created = models.DateTimeField(auto_now_add=True) # auto_now_add make the time only once after creation
-    friends = models.ManyToManyField(Friends, related_name='friends', blank=True)
+    # friends = models.ManyToManyField(Friends, related_name='friends', blank=True)
 
     # def get_friends(self):
     #     friends = Friends.objects.filter(friends=self)

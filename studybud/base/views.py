@@ -221,11 +221,56 @@ def room(request, pk):
     }
     return render(request, 'base/room.html', context)
 
+def priv_room_add_friends(request, pk):
+    priv_room = Private_Room.objects.get(id=pk)
+    # print(priv_room.name)
+    form = PrivateRoomFormCreate(instance=priv_room)
+    # print(form.instance.host)
+    # print(form.fields['name'])
+    # print(form.fields['name'])
+    if request.method == 'POST':
+        form = PrivateRoomFormCreate(request.POST, instance=priv_room)
+        # print(form.instance.host)
+        # print(form.instance.name)
+        # form = form(request.POST)
+        # print(form.clean().get('name'))
+        # print(form['name'])
+        # form.description = priv_room.description
+        # form.
+        # form.get_context()
+        # form.instance = PrivateRoomForm(instance=priv_room)
+        if form.is_valid():
+            # print('KKKKKKKKK!!!')
+            rm = form.save(commit=False)
+            temp = form.cleaned_data.get("room_friends")
+            for i in temp:
+                # print(i)
+                priv_room.room_friends.add(User.objects.get(id=i))
+                priv_room.save()
+            priv_room.save()
+            rm.save()
+
+            return redirect('private_room', priv_room.id)
+        else:
+            print(form.errors)
+    context = {'form': form, 'priv_room': priv_room}
+    return render(request, 'base/priv_room_add_friends.html', context)
+
+def priv_room_delete_friends(request, rm_pk, us_pk):
+    friend = User.objects.get(id=us_pk)
+    priv_room = Private_Room.objects.get(id=rm_pk)
+    # print(priv_room.room_friends.get(id=friend.id))
+    if request.method == 'POST':
+        priv_room.room_friends.remove(friend)
+        return redirect('private_room', priv_room.id)
+    context = {'obj': friend}
+    return render(request, 'base/delete.html', context)
+#
 
 def private_room(request, pk):
     priv_room = Private_Room.objects.get(id=pk)
     msgs = priv_room.message_set.all()
-    friends = priv_room.friends.all()
+    friends = priv_room.room_friends.all()
     ids = []
     for i in msgs:
         if i.reply:
@@ -236,7 +281,7 @@ def private_room(request, pk):
             user=request.user,
             room=room,
             body=request.POST.get('body'))
-        priv_room.friends.add(request.user)
+
         priv_room.updated = msg.created
         priv_room.save()
         return redirect('private_room', pk=priv_room.id)
@@ -248,12 +293,76 @@ def private_room(request, pk):
     }
     return render(request, 'base/private_room.html', context)
 
+# @login_required(login_url='login')
+# def create_private_room(request):
+#     # form = PrivateRoomFormCreate()
+#     # form.host = r
+#     # friends = Friends.objects.filter(Q(is_friend=True) |
+#     #                                 Q(host_friend_id=request.user.id))
+#     # host = request.user
+#     form = PrivateRoomFormCreate(instance=request.user)
+#     # form.fields['host'] = request.user
+#     # form.fields['host'] = request.user
+#     if request.method == 'POST':
+#         # friends_name = request.POST.get('friends')
+#         # friends = Friends.objects.get(friend__username=friends_name)
+#         # topic_name = request.POST.get('topic')
+#         # topic, created = Topic.objects.get_or_create(name=topic_name)
+#         # Private_Room.objects.create(
+#         #     host=request.user
+#         #     friends=Friends.objects.filter(Q(is_friend=True) |
+#         #                             Q(host_friend_id=request.user.id)),
+#         #     name=request.POST.get('name'),
+#         #     description=request.POST.get('description')
+#         # )
+#         # topic.updated = datetime.datetime.now()
+#         # topic.save()
+#         form = PrivateRoomFormCreate(request.POST)
+#         # form.fields['friends'].choices = Friends.objects.filter(Q(is_friend=True) |
+#         #                             Q(host_friend=request.user))
+#         # form.fields['friends'].choices = friends
+#         if form.is_valid():
+#             # form.save()
+#             priv_room = form.save(commit=False)
+#             priv_room.host = request.user
+#
+#             # for i in form.fields['room_friends']:
+#             # print(priv_room.room_friends.all())
+#             # for i in priv_room.room_friends:
+#             #     print(i)
+#             # priv_room.room_friends
+#             # priv_room.name = request.POST.get('name')
+#             # priv_room.description = request.POST.get('description')
+#             # print(temp)
+#             priv_room.save()
+#             priv_room.room_friends.add(request.user.id)
+#             temp = form.cleaned_data.get("room_friends")
+#             for i in temp:
+#                 priv_room.room_friends.add(User.objects.get(id=i))
+#             # priv_room.room_friends.add(request.user)
+#
+#             # priv_room.people.add((i for i in friends.id))
+#             # for i in friends:
+#             #     print(User.objects.filter(friends__in=friends))
+#             #     priv_room.people.add(i)
+#
+#         #     room.save()
+#         #       return redirect('home')
+#
+#         return redirect('private_messages', request.user.id)
+#     context = {'form': form}
+#     return render(request, 'base/private_room_form.html', context)
+
 @login_required(login_url='login')
 def create_private_room(request):
-    form = PrivateRoomFormCreate()
+    # form = PrivateRoomFormCreate()
     # form.host = r
-    friends = Friends.objects.filter(Q(is_friend=True) |
-                                    Q(host_friend_id=request.user.id))
+    # friends = Friends.objects.filter(Q(is_friend=True) |
+    #                                 Q(host_friend_id=request.user.id))
+    # host = request.user
+    form = PrivateRoomForm()
+    # form.fields['host'] = request.user
+    # form.fields['host'] = request.user
     if request.method == 'POST':
         # friends_name = request.POST.get('friends')
         # friends = Friends.objects.get(friend__username=friends_name)
@@ -268,25 +377,60 @@ def create_private_room(request):
         # )
         # topic.updated = datetime.datetime.now()
         # topic.save()
-        form = PrivateRoomFormCreate(request.POST)
+        form = PrivateRoomForm(request.POST)
         # form.fields['friends'].choices = Friends.objects.filter(Q(is_friend=True) |
         #                             Q(host_friend=request.user))
+        # form.fields['friends'].choices = friends
         if form.is_valid():
+            # form.save()
             priv_room = form.save(commit=False)
             priv_room.host = request.user
-            priv_room.name = request.POST.get('name')
-            priv_room.description = request.POST.get('description')
+
+            # for i in form.fields['room_friends']:
+            # print(priv_room.room_friends.all())
+            # for i in priv_room.room_friends:
+            #     print(i)
+            # priv_room.room_friends
+            # priv_room.name = request.POST.get('name')
+            # priv_room.description = request.POST.get('description')
+            # print(temp)
             priv_room.save()
+            priv_room.room_friends.add(request.user.id)
+            # temp = form.cleaned_data.get("room_friends")
+            # for i in temp:
+            #     priv_room.room_friends.add(User.objects.get(id=i))
+            # priv_room.room_friends.add(request.user)
+
+            # priv_room.people.add((i for i in friends.id))
+            # for i in friends:
+            #     print(User.objects.filter(friends__in=friends))
+            #     priv_room.people.add(i)
 
         #     room.save()
         #       return redirect('home')
 
-        return redirect('private_messages', request.user.id)
-    context = {'form': form, 'friends': friends}
+            return redirect('add_friend_pr_r', priv_room.id)
+    context = {'form': form}
+    return render(request, 'base/private_room_form.html', context)
+
+def update_private_room(request, pk):
+    private_room = Private_Room.objects.get(id=pk)
+    form = PrivateRoomFormCreate(instance=private_room)
+
+    if request.method == 'POST':
+        form = PrivateRoomFormCreate(request.POST)
+        private_room.name = request.POST.get('name')
+        temp = form.cleaned_data.get("room_friends")
+        for i in temp:
+            private_room.room_friends.add(User.objects.get(id=i))
+        private_room.save()
+
+        return redirect('private_room', pk=private_room.id)
+    context = {'form': form, 'private_room': private_room}
     return render(request, 'base/private_room_form.html', context)
 
 def private_rooms_list(request):
-    private_rooms = Private_Room.objects.filter(host=request.user)
+    private_rooms = Private_Room.objects.filter(room_friends=request.user)
 
     return render(request, 'base/private_rooms_list.html', context={'private_rooms': private_rooms})
 
@@ -596,6 +740,12 @@ def friends_list(request):
     connection = Friends.objects.filter(friend=request.user.id)
     # if request.method == 'POST':
     friends = User.objects.filter(friends__friend=request.user.id)
+    for i in connection:
+        for j in i.friend.all():
+            # if j.id != request.user.id:
+                print(j.id)
+    # for i in connection:
+    #     print(i.id)
 
     # chats = Chat.objects.filter(members=request.user.id).order_by('-updated')
     # for i in friends:

@@ -22,30 +22,30 @@
           <form class="form" action="" method="POST">
               {% csrf_token %}
 
-{#              <div class="form__group">#}
+              <div class="form__group">
 {#              <label for="room_topic">Add a Friends</label>#}
 {#                <input required type="text" value="{{ form.friends }}" name="topic" list="topic-list"/>#}
 {#                  <datalist id="topic-list">#}
 {#                      <select id="room_topic">#}
 {#                          {% for friend in friends %}#}
-{#                  {{ form.room_friends }}#}
+                  {{ form.room_friends }}
 {#                        <option value="{{ form.friends }}">{{ form.friends }}</option>#}
 {#                          {% endfor %}#}
 {#                      </select>#}
 {##}
 {#                  </datalist>#}
-{#            </div>#}
-
-            <div class="form__group">
-              <label for="room_name">Room name</label>
+            </div>
+{##}
+{#            <div class="form__group">#}
+{#              <label for="room_name">Room name</label>#}
 {#              <input id="room_name" name="room_name" type="text" placeholder="E.g. Mastering Python + Django" />#}
-            {{ form.name }}
-            </div>
-
-              <div class="form__group">
-              <label for="room_description">Room description</label>
-            {{ form.description }}
-            </div>
+{#            {{ form.name }}#}
+{#            </div>#}
+{##}
+{#              <div class="form__group">#}
+{#              <label for="room_description">Room description</label>#}
+{#            {{ form.description }}#}
+{#            </div>#}
 
 
 {#            <div class="form__group">#}
