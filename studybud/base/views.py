@@ -109,9 +109,9 @@ def home(request):
         Q(description__icontains=q) |
         Q(host__first_name__icontains=q)
     ).order_by('-updated')
-    topics = Topic.objects.all().order_by('-updated')[0:5]
+    topics = Topic.objects.all().order_by('-updated')[0:10]
     room_count = rooms.count()
-    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))[0:10]
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))[0:7]
     # if receiver(post_save, sender=User):
     #     if created:
     #         messages.error(request, 'Email')
@@ -125,14 +125,26 @@ def home(request):
     return render(request, 'base/home.html', context)
 
 def add_image(request, pk):
-    room, chat = None, None
+    room, chat, priv_room = None, None, None
     img = MessgImg()
     print(request, "!!!!!!!")
     if 'room' in request.path:
         print('room in Request')
     else:
         print('no!!!!')
-    if 'room' in request.path:
+
+    if 'private_room' in request.path:
+        priv_room = Private_Room.objects.get(id=pk)
+        if request.method == 'POST':
+            img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+                user=request.user,
+                body='',
+                private_room=priv_room
+            ))
+            if img.is_valid():
+                img.save()
+                return redirect('private_room', priv_room.id)
+    elif 'room' in request.path:
         room = Room.objects.get(id=pk)
         if request.method == 'POST':
             img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
@@ -143,6 +155,17 @@ def add_image(request, pk):
             if img.is_valid():
                 img.save()
                 return redirect('room', room.id)
+    # elif 'private_room' in request.path:
+    #     priv_room = Private_Room.objects.get(id=pk)
+    #     if request.method == 'POST':
+    #         img = MessgImg(request.POST, request.FILES, instance=Message.objects.create(
+    #             user=request.user,
+    #             body='',
+    #             private_room=priv_room
+    #         ))
+    #         if img.is_valid():
+    #             img.save()
+    #             return redirect('private_room', priv_room.id)
     else:
         chat = Chat.objects.get(id=pk)
         if request.method == 'POST':
@@ -173,7 +196,7 @@ def add_image(request, pk):
             # if img.is_valid():
             #     img.save()
             #     return redirect('chat', chat.id)
-    return render(request, 'base/add_image.html', {'img': img, 'room': room, 'chat': chat})
+    return render(request, 'base/add_image.html', {'img': img, 'room': room, 'chat': chat, 'priv_room': priv_room})
 
 def room(request, pk):
     # room = None
@@ -279,7 +302,7 @@ def private_room(request, pk):
     if request.method == "POST":
         msg = Message.objects.create(
             user=request.user,
-            room=room,
+            private_room=priv_room,
             body=request.POST.get('body'))
 
         priv_room.updated = msg.created
@@ -415,31 +438,52 @@ def create_private_room(request):
 
 def update_private_room(request, pk):
     private_room = Private_Room.objects.get(id=pk)
-    form = PrivateRoomFormCreate(instance=private_room)
+    form = PrivateRoomForm(instance=private_room)
 
     if request.method == 'POST':
-        form = PrivateRoomFormCreate(request.POST)
+        form = PrivateRoomForm(request.POST)
         private_room.name = request.POST.get('name')
-        temp = form.cleaned_data.get("room_friends")
-        for i in temp:
-            private_room.room_friends.add(User.objects.get(id=i))
+        # temp = form.cleaned_data.get("room_friends")
+        # for i in temp:
+        #     private_room.room_friends.add(User.objects.get(id=i))
         private_room.save()
 
         return redirect('private_room', pk=private_room.id)
     context = {'form': form, 'private_room': private_room}
     return render(request, 'base/private_room_form.html', context)
 
+@login_required(login_url='login')
+def delete_private_room(request, pk):
+    priv_room = Private_Room.objects.get(id=pk)
+    if request.method == 'POST':
+        priv_room.delete()
+        return redirect('home')
+    context = {'obj': priv_room}
+    return render(request, 'base/delete.html', context)
+
 def private_rooms_list(request):
     private_rooms = Private_Room.objects.filter(room_friends=request.user)
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    users = User.objects.filter(room_friends__room_friends=request.user)
+    topics = Topic.objects.all().order_by('-updated')[0:10]
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
+    rooms_count = private_rooms.count()
+    context = {
+        'private_rooms': private_rooms,
+        'topics': topics,
+        'room_messages': room_messages,
+        'rooms_count': rooms_count,
+        'users': users
+    }
 
-    return render(request, 'base/private_rooms_list.html', context={'private_rooms': private_rooms})
+    return render(request, 'base/private_rooms_list.html', context)
 
 
 @login_required(login_url='login')
 def private_messages(request, pk):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     user = User.objects.get(id=pk)
-    topics = Topic.objects.all()[0:5]
+    topics = Topic.objects.all().order_by('-updated')[0:10]
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
     chats = Chat.objects.filter(members=request.user.id).order_by('-updated')
     users = User.objects.filter(members__members=request.user.id)
@@ -645,7 +689,12 @@ def edit_message(request, pk):
         form = MessageForm(request.POST, instance=messg)
         if form.is_valid():
             form.save()
-        return redirect('room', messg.room.id)
+        if messg.room:
+            return redirect('room', messg.room.id)
+        if messg.chat:
+            return redirect('chat', messg.chat.id)
+        if messg.private_room:
+            return redirect('private_room', messg.private_room.id)
     context = {'form': form, 'messg': messg}
     return render(request, 'base/edit_mess_form.html', context)
 
@@ -676,6 +725,16 @@ def reply_message(request, pk):
             # print(messg.objects.get())
             # pow = Message.objects.get(id=messg.reply)
             return redirect('room', messg.room.id)
+        elif messg.private_room:
+            messag = Message.objects.create(
+                user=request.user,
+                private_room=messg.private_room,
+                body=request.POST.get('body'),
+                reply=messg.id
+            )
+            # print(messg.objects.get())
+            # pow = Message.objects.get(id=messg.reply)
+            return redirect('private_room', messg.private_room.id)
         else:
             messag = Message.objects.create(
                 user=request.user,
@@ -738,12 +797,24 @@ def friend_request(request, pk):
 
 def friends_list(request):
     connection = Friends.objects.filter(friend=request.user.id)
+    # for con in connection:
+    #     print(con)
     # if request.method == 'POST':
-    friends = User.objects.filter(friends__friend=request.user.id)
-    for i in connection:
-        for j in i.friend.all():
-            # if j.id != request.user.id:
-                print(j.id)
+    # friends = User.objects.filter(friends__friend=request.user.id)
+
+    # for con in connection:
+    #     for chat in chats:
+    #         if con in chat.members.all():
+    #             print(con)
+    # if request.user in chats.members.all():
+    #     print('!!!!!!!')
+    # for chat in chats:
+    #     print(chat.members.all())
+
+    # for i in connection:
+    #     for j in i.friend.all():
+    #         # if j.id != request.user.id:
+    #             print(j.id)
     # for i in connection:
     #     print(i.id)
 
@@ -759,22 +830,21 @@ def friends_list(request):
         Q(description__icontains=q) |
         Q(host__first_name__icontains=q)
     )
-    topics = Topic.objects.all()[0:5]
-    friends_count = friends.count()
-    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
+    topics = Topic.objects.all()[0:10]
+    friends_count = connection.count()
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))[0:7]
     # if receiver(post_save, sender=User):
     #     if created:
     #         messages.error(request, 'Email')
 
     context = {
-        'friends': friends,
+        # 'friends': friends,
         # 'users': users,
         'connection': connection,
         'rooms': rooms,
         'topics': topics,
         'friends_count': friends_count,
         'room_messages': room_messages
-        # 'chats': chats
     }
     return render(request, 'base/friends_list.html', context)
 

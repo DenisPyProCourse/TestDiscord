@@ -125,9 +125,8 @@ class Friends(models.Model):
 
     def __str__(self):
         users = User.objects.filter(friends=self)
-        for i in users:
-            if i != self.host_friend:
-                return i.username
+
+        return (lambda x: f'friendship between {next(x)} and {next(x)}')(i.username for i in users)
 
 
 class Private_Room(models.Model):

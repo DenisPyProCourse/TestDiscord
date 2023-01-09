@@ -52,7 +52,7 @@ class PrivateRoomFormCreate(PrivateRoomForm):
                 # Friends.objects.filter((Q(is_friend=True) |
                 #                     Q(host_friend_id=self.instance.id)))
                 User.objects.filter((Q(friends__is_friend=True) &
-                                     Q(friends__host_friend_id=self.instance.host.id))) if
+                                     Q(friends__friend__id=self.instance.host.id))) if
                 friend.id != self.instance.host.id and friend not in self.instance.room_friends.all()
             ],
             label='room_friends',

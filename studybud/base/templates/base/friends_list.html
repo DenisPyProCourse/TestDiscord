@@ -29,7 +29,8 @@
           </div>
           <div class="roomList__header">
             <div>
-              <h2>Friends</h2>
+              <h2>Friends: {{ friends_count }}</h2>
+{#                <p>{{ friends_count}} </p>#}
             </div>
           </div>
 
@@ -72,10 +73,12 @@
               </a>
                                 <a href="{% url 'delete_friend' con.id %}">
                                     <small>Delete friend </small>
-              </a>
-{#                        {% if friend.is_authenticated %}#}
+              </a>  {#   /#}
+{#                                <a href="{% url 'create_chat' friend.id%}">Create Chat</a>#}
+{#                                        {% endif %}#}
+                        {% if friend.is_authenticated %}
                             <p class="text-muted">{{ friend.get_online_info }}</p>
-{#                            {% endif %}#}
+                            {% endif %}
                         </div>
                                 {% endif %}
 {#                        {% endif %}#}
