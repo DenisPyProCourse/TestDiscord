@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'base.apps.BaseConfig',
+    'Friends.apps.FriendsConfig',
+    'private_message.apps.private_messageConfig',
+    'PrivateRoom.apps.PrivateroomConfig',
+    'Room.apps.RoomConfig',
 ]
 
 AUTH_USER_MODEL = 'base.User'

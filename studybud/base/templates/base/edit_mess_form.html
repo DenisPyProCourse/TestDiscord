@@ -19,11 +19,12 @@
           </div>
         </div>
         <div class="layout__body">
+
           <form class="form" action="" method="POST">
               {% csrf_token %}
 
               <div class="form__group">
-              <label for="room_description">Message</label>
+              <label for="room_description">Message:</label>
 
                   {{ form.body }}
             </div>
