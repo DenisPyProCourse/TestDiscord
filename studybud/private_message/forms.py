@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 
-from private_message.models import Chat
+from .models import Chat
 
 
 class ChatForm(ModelForm):

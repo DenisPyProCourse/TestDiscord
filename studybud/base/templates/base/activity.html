@@ -22,6 +22,7 @@
 
           <div class="activities-page layout__body">
                {% for message in room_messages %}
+          {% if message.room %}
           <div class="activities__box">
             <div class="activities__boxHeader roomListRoom__header">
               <a href="{% url 'user_profile' message.user.pk %}" class="roomListRoom__author">
@@ -34,9 +35,9 @@
                 </p>
               </a>
 
-                {% if request.user == msg.user %}
+                {% if request.user == message.user %}
               <div class="roomListRoom__actions">
-                <a href="{% url 'delete_message' msg.id %}">
+                <a href="{% url 'delete_message' message.id %}">
                   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                     <title>remove</title>
                     <path
@@ -47,13 +48,17 @@
               </div>
                 {% endif %}
             </div>
+
             <div class="activities__boxContent">
+
               <p>replied to room “<a href="{% url 'room' message.room.id %}">{{ message.room}}</a>”</p>
               <div class="activities__boxRoomContent">
                   {{ message.body}}
               </div>
             </div>
+
           </div>
+                   {% endif %}
     {% endfor %}
           </div>
         </div>

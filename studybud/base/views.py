@@ -1,97 +1,14 @@
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from Friends.models import Friends
 from private_message.models import Chat
-from private_message.views import create_chat
-from PrivateRoom.models import Private_Room
-from Room.models import Room
-from base.forms import MyUserCreationForm, MessgImg, UserForm, MessageForm
-from base.models import User, Topic, Message
-from base.token import account_activation_token
-
-
-def login_page(request):
-    page = 'login'
-    if request.user.is_authenticated:
-        return redirect('home')
-
-    if request.method == 'POST':
-        email = request.POST.get('email').lower()
-        password = request.POST.get('password')
-        try:
-            user = User.objects.get(email=email)
-        except:
-            messages.error(request, 'User does not exist')
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('home')
-        else:
-            messages.error(request, 'Username or Password does not exist')
-    context = {'page': page}
-    return render(request, 'base/login_register.html', context)
-
-
-def logout_user(request):
-    logout(request)
-    return redirect('home')
-
-
-def register_user(request):
-    form = MyUserCreationForm()
-    if request.method == 'POST':
-        form = MyUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            current_site = get_current_site(request)
-            mail_subject = 'Activation link has been sent to your email id'
-            message = render_to_string('base/acc_active_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            to_email = form.cleaned_data.get('email')
-            email = EmailMessage(
-                mail_subject, message, to=[to_email]
-            )
-            email.send()
-            em_conf = True
-            return render(request, 'base/email_confirmation.html', context={'em_conf': em_conf})
-        else:
-            messages.error(request, 'An error occurred during registration')
-    context = {'form': form}
-    return render(request, 'base/login_register.html', context)
-
-
-def activate(request, uidb64, token):
-    Userr = User
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = Userr.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, Userr.DoesNotExist):
-        user = None
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        em_log = True
-        return render(request,'base/email_confirmation.html', context= {'em_log': em_log})  #'Thank you for your email
-        # confirmation. Now you can login your account.'
-    else:
-        return HttpResponse('Activation link is invalid!')
+from private_room.models import Private_Room
+from room.models import Room
+from .forms import MessgImg, MessageForm
+from .models import Topic, Message
 
 
 def home(request):
@@ -182,18 +99,6 @@ def delete_message(request, pk):
     return render(request, 'base/delete.html', context)
 
 
-@login_required(login_url='login')
-def update_user(request):
-    user = request.user
-    form = UserForm(instance=user)
-    if request.method == 'POST':
-        form = UserForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('user_profile', pk=user.id)
-    return render(request, 'base/update_user.html', {'form': form})
-
-
 def topics_page(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     topics = Topic.objects.filter(name__icontains=q)
@@ -205,7 +110,7 @@ def topics_page(request):
 
 
 def activity_page(request):
-    room_messages = Message.objects.all()
+    room_messages = Message.objects.select_related('room').all()
     return render(request, 'base/activity.html', {'room_messages': room_messages})
 
 
@@ -259,33 +164,3 @@ def reply_message(request, pk):
             return redirect('chat', messg.chat.id)
     context = {'form': form, 'messg': messg, 'pow': pow}
     return render(request, 'base/reply_messg.html', context)
-
-
-def user_profile(request, pk):
-    user = User.objects.get(id=pk)
-    rooms = user.room_set.all()
-    room_count = rooms.count()
-    room_messages = user.message_set.all()
-    topics = Topic.objects.all()[0:5]
-    chats = Chat.objects.filter(members__in=[request.user.id, user.id]).annotate(
-        c=Count('members')).filter(c=2)
-    friends = Friends.objects.filter(friend__in=[request.user.id, user.id]).annotate(
-        c=Count('friend')).filter(c=2)
-    if request.method == 'POST':
-        if chats.count() == 0:
-            create_chat(pk=pk)
-        else:
-            chats = chats.first()
-    chats = chats.first()
-    connection = friends.first()
-    context = {
-        'user': user,
-        'rooms': rooms,
-        'room_messages': room_messages,
-        'topics': topics,
-        'room_count': room_count,
-        'chats': chats,
-        'friends': friends,
-        'connection': connection
-    }
-    return render(request, 'base/profile.html', context)

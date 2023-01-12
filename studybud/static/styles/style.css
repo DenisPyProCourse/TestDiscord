@@ -617,7 +617,7 @@ a {
 }
 
 /*==============================
-=>  Room List
+=>  room List
 ================================*/
 
 .roomList__header {
@@ -639,7 +639,7 @@ a {
   color: var(--color-dark-light);
 }
 
-/*========== Room List Room ==========*/
+/*========== room List room ==========*/
 
 .roomListRoom {
   margin-bottom: 2.4rem;
@@ -791,7 +791,7 @@ a {
 }
 
 /*==============================
-=>  Create Room
+=>  Create room
 ================================*/
 
 .create-room.layout .layout__box {
@@ -897,7 +897,7 @@ a {
 }
 
 /*==============================
-=>  Room
+=>  room
 ================================*/
 
 .room,

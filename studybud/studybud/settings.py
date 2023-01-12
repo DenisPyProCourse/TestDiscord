@@ -41,13 +41,14 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'base.apps.BaseConfig',
-    'Friends.apps.FriendsConfig',
-    'private_message.apps.private_messageConfig',
-    'PrivateRoom.apps.PrivateroomConfig',
-    'Room.apps.RoomConfig',
+    'friends.apps.FriendsConfig',
+    'private_message.apps.Private_MessageConfig',
+    'private_room.apps.Private_RoomConfig',
+    'room.apps.RoomConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
-AUTH_USER_MODEL = 'base.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -113,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'base.backends.MyBackend',
+    'accounts.backends.MyBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -155,3 +156,14 @@ EMAIL_HOST_PASSWORD = 'autFmon42'
 EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = 'dendv95@zohomail.eu'
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+# CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
+# REDIS related settings
+REDIS_HOST = 'localhost'
+REDIS_PORT = '6379'
+BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'

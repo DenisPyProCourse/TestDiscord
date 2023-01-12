@@ -2,9 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect
 
-from private_message.forms import ChatForm
-from private_message.models import Chat
-from base.models import User, Topic, Message
+from .forms import ChatForm
+from .models import Chat
+from base.models import Topic, Message
+from accounts.models import User
 
 
 @login_required(login_url='login')

@@ -26,9 +26,9 @@
         <option value="$MODULE_DIR$/studybud/base/templates" />
         <option value="$MODULE_DIR$/studybud/templates" />
         <option value="$MODULE_DIR$/studybud/Friends/templates" />
-        <option value="$MODULE_DIR$/studybud/PrivateMessage/templates" />
         <option value="$MODULE_DIR$/studybud/PrivateRoom/templates" />
         <option value="$MODULE_DIR$/studybud/Room/templates" />
+        <option value="$MODULE_DIR$/studybud/accounts/templates" />
       </list>
     </option>
   </component>
