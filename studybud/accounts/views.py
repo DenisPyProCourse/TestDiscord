@@ -63,10 +63,6 @@ def register_user(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            # email = EmailMessage(
-            #     mail_subject, message, to=[to_email]
-            # )
-            # email.send()
             send_email_verif.delay(mail_subject, message, to_email)
             em_conf = True
             return render(request, 'accounts/email_confirmation.html', context={'em_conf': em_conf})

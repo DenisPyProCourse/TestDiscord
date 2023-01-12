@@ -12,6 +12,10 @@ class MyUserCreationForm(UserCreationForm):
         model = User
         fields = ['name', 'username', 'email', 'password1', 'password2']
 
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        return username.lower()
+
 
 class UserForm(ModelForm):
     class Meta:
@@ -23,6 +27,10 @@ class UserForm(ModelForm):
         if lnkdn is not None and 'linkedin' not in lnkdn:
             raise ValidationError('Not a LinkedIn link', code='invalid')
         return lnkdn
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        return username.lower()
 
 
 class MyPasswordResetForm(PasswordResetForm):
