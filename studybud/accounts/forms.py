@@ -1,3 +1,4 @@
+from allauth.socialaccount.forms import SignupForm
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
@@ -7,7 +8,7 @@ from .models import User
 from .tasks import send_email_reset_pass
 
 
-class MyUserCreationForm(UserCreationForm):
+class MyUserCreationForm(SignupForm):
     class Meta:
         model = User
         fields = ['name', 'username', 'email', 'password1', 'password2']
@@ -15,6 +16,14 @@ class MyUserCreationForm(UserCreationForm):
     def clean_username(self):
         username = self.cleaned_data['username']
         return username.lower()
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        username = self.cleaned_data['username']
+        username = first_name
+        return username.lower
+
+
 
 
 class UserForm(ModelForm):

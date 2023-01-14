@@ -1,5 +1,11 @@
 {% extends 'base_temp.html' %}
+{#{% load socialaccount %}#}
+{% load socialaccount %}
 
+{#{% load socialaccount %}#}
+{#{% get_providers as socialaccount_providers %}#}
+
+{#{% load allauth account socialaccount %}#}
 
 {% block content %}
 
@@ -33,6 +39,11 @@
                   placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                 />
               </div>
+{#                <div>#}
+{#                    <a href="{% url "login_with_sn" %}">Login with Social</a>#}
+{#                </div>#}
+{#                <a href="{% provider_login_url 'google' %}">Google</a>#}
+
 
               <button class="btn btn--main" type="submit">
                 <svg
@@ -53,6 +64,15 @@
 
                 Login
               </button>
+                <div>
+<p>Login with:</p>
+{% get_providers as socialaccount_providers %}
+{% for provider in socialaccount_providers %}
+
+    <a title="{{provider.name}}" class="{{provider.id}}" href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">{{provider.name}}</a>
+    {% endfor %}
+
+</div>
             </form>
 
             <div class="auth__action">

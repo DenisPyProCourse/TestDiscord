@@ -1,3 +1,6 @@
+from allauth.account.views import login
+from django.conf import settings
+from django.contrib.auth import logout
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView, \
     PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import path
@@ -5,8 +8,8 @@ from .views import login_page, logout_user, register_user, user_profile, update_
 
 urlpatterns = [
     path('update_user/', update_user, name='update_user'),
+    # path('profile/<int:pk>', user_profile, name='profile'),
     path('profile/<int:pk>', user_profile, name='user_profile'),
-
     path('login/', login_page, name='login'),
     path('logout/', logout_user, name='logout'),
     path('register/', register_user, name='register'),
@@ -18,4 +21,5 @@ urlpatterns = [
     path("password_reset/done/", PasswordResetDoneView.as_view(), name="password_reset_done",),
     path("reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password_reset_confirm",),
     path("reset/done/", PasswordResetCompleteView.as_view(), name="password_reset_complete",),
+    # path('login_site/', login, name='login_with_sn'),
 ]

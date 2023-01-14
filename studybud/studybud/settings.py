@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,6 +47,15 @@ INSTALLED_APPS = [
     'private_room.apps.Private_RoomConfig',
     'room.apps.RoomConfig',
     'accounts.apps.AccountsConfig',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # 'allauth.socialaccount.providers.apple',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.linkedin',
+    'allauth.socialaccount.providers.linkedin_oauth2',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -69,6 +79,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'templates'],
+        # 'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'templates', 'allauth')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -115,7 +127,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'accounts.backends.MyBackend',
+    # 'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Internationalization
@@ -167,3 +181,49 @@ REDIS_PORT = '6379'
 BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+
+# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '680488800312-v3sg4tc3r4vn9q5qj2khf8q8il0rla1e.apps.googleusercontent.com' # Google Consumer Key
+# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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' # Google Consumer Secret
+# ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+LOGIN_REDIRECT_URL = 'home'
+SITE_ID = 1
+#
+# ACCOUNT_FORMS = {
+#     'signup': 'studybud.accounts.forms.MyUserCreationForm',
+#     }
+
+# Provider specific settings
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'github': {
+        'SCOPE': [
+            'user',
+            'repo',
+            'read:org',
+        ],
+    },
+    'linkedin_oauth2': {
+        'SCOPE': [
+            'r_liteprofile',
+            'r_emailaddress'
+        ],
+        'PROFILE_FIELDS': [
+            'id',
+            'first-name',
+            'last-name',
+            'email-address',
+            'picture-url',
+            'public-profile-url',
+        ]
+    }
+}
+
